@@ -1,0 +1,9 @@
+.dotnet
+.git
+**/node_modules
+**/bin
+**/obj
+**/dist
+.env
+tools
+docs/screenshots

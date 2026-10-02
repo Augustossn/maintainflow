@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: api, namespace: maintainflow}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: api}}
+  template:
+    metadata: {labels: {app: api}}
+    spec:
+      containers:
+        - name: api
+          image: maintainflow-api:latest
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 8080}]
+          envFrom: [{secretRef: {name: maintainflow-api}}]
+          env:
+            - {name: ASPNETCORE_ENVIRONMENT, value: Development}
+            - {name: Database__Initialize, value: 'true'}
+            - {name: Database__Seed, value: 'true'}
+            - {name: Auth__DemoEnabled, value: 'true'}
+          startupProbe: {httpGet: {path: /health/ready, port: 8080}, failureThreshold: 60, periodSeconds: 5}
+          readinessProbe: {httpGet: {path: /health/ready, port: 8080}, periodSeconds: 10}
+          livenessProbe: {httpGet: {path: /health/live, port: 8080}, periodSeconds: 20}
+          resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: '1', memory: 512Mi}}
+          securityContext: {runAsNonRoot: true, runAsUser: 1654, allowPrivilegeEscalation: false}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: api, namespace: maintainflow}
+spec: {selector: {app: api}, ports: [{port: 8080, targetPort: 8080}]}

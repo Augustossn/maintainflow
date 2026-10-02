@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+.dotnet/
+.env
+**/TestResults/
+**/coverage/
+**/playwright-report/
+**/test-results/
+tools/dotnet-install.ps1
+frontend/.playwright/
+frontend/*.tsbuildinfo
+ops/k8s/api.env

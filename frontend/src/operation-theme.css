@@ -1,0 +1,364 @@
+/* A quieter, editorial identity inspired by workshop records and field equipment. */
+:root {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f3f0e8;
+  color: #242d29;
+  --border: #d7d5cc;
+  --muted: #626a63;
+}
+body {
+  background: #f3f0e8;
+}
+.sidebar {
+  background: #202e28;
+  border-right: 0;
+  color: #f0eee5;
+}
+.sidebar .brand,
+.sidebar .brand > span:last-child {
+  color: #f0eee5;
+}
+.brand {
+  letter-spacing: -1.3px;
+}
+.brand-symbol {
+  border-radius: 3px;
+  background: #d9ab54;
+  color: #202e28;
+}
+.sidebar .workspace-select {
+  border-color: #536158;
+  border-radius: 3px;
+}
+.sidebar .workspace-select small,
+.sidebar .profile small {
+  color: #c0c9bf;
+}
+.sidebar .workspace-icon {
+  background: #39473d;
+  color: #e6d4ae;
+  border-radius: 2px;
+}
+.sidebar .nav-label {
+  color: #c0c9bf;
+  font-family: Consolas, monospace;
+}
+.sidebar nav {
+  gap: 2px;
+}
+.sidebar nav button {
+  color: #d4dbd1;
+  border-radius: 2px;
+  border-left: 2px solid transparent;
+}
+.sidebar nav button:hover {
+  background: #33443a;
+}
+.sidebar nav button.active {
+  background: #3b4d40;
+  color: #fff;
+  border-left-color: #e2b966;
+}
+.sidebar .nav-count {
+  background: #e2b966;
+  color: #202e28;
+  border-radius: 2px;
+}
+.sidebar-tip {
+  background: transparent;
+  border-color: #536158;
+  border-radius: 3px;
+}
+.sidebar-tip p,
+.sidebar-tip button,
+.sidebar .help-link,
+.sidebar .profile button {
+  color: #d4dbd1;
+}
+.sidebar .profile {
+  border-color: #536158;
+}
+.topbar {
+  height: 64px;
+  background: #f3f0e8;
+  border-color: #d7d5cc;
+}
+.breadcrumb {
+  font-family: Consolas, monospace;
+  font-size: 10px;
+}
+.main-content {
+  padding-top: 38px;
+}
+.eyebrow {
+  font-family: Consolas, monospace;
+  color: #626a63;
+  letter-spacing: 1.3px;
+}
+.page-heading {
+  margin-bottom: 30px;
+}
+.page-heading h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 46px;
+  font-weight: 400;
+  letter-spacing: -1.8px;
+  margin: 11px 0;
+}
+.page-heading p {
+  color: #626a63;
+  font-size: 13px;
+}
+.greeting-dot {
+  display: none;
+}
+.date-display {
+  color: #626a63;
+  font-family: Consolas, monospace;
+}
+.button,
+input,
+select,
+textarea {
+  border-radius: 3px;
+}
+.button-primary {
+  background: #253e32;
+  box-shadow: none;
+}
+.button-primary:hover {
+  background: #385442;
+}
+.button-outline {
+  border-color: #cbcfc3;
+}
+.welcome-strip {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid #a6afa2;
+  border-bottom: 1px solid #a6afa2;
+  border-radius: 0;
+  padding: 15px 0;
+  margin-bottom: 0;
+}
+.welcome-icon {
+  background: #e4b86d;
+  color: #303b2f;
+  border: 0;
+  border-radius: 2px;
+  width: 34px;
+  height: 34px;
+}
+.welcome-strip strong {
+  font-size: 13px;
+}
+.welcome-strip p {
+  color: #626a63;
+}
+.welcome-strip button {
+  color: #334d3e;
+}
+.welcome-decoration {
+  display: none;
+}
+.metric-grid {
+  gap: 0;
+  background: transparent;
+  border-bottom: 1px solid #a6afa2;
+  margin-bottom: 32px;
+}
+.metric-card {
+  background: transparent;
+  border: 0;
+  border-right: 1px solid #d7d5cc;
+  border-radius: 0;
+  padding: 25px 20px;
+}
+.metric-card:first-child {
+  padding-left: 0;
+}
+.metric-card:last-child {
+  border-right: 0;
+}
+.metric-top {
+  color: #555f56;
+  font-size: 11px;
+}
+.metric-icon {
+  background: transparent;
+  color: #64745e;
+  width: 24px;
+  height: 24px;
+  border-radius: 0;
+}
+.metric-value {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 38px;
+  font-weight: 400;
+  letter-spacing: -1.3px;
+  margin: 12px 0;
+  font-variant-numeric: tabular-nums;
+}
+.metric-detail {
+  color: #626a63;
+  font-size: 10px;
+}
+.mini-dot {
+  border-radius: 0;
+}
+.panel {
+  border-radius: 3px;
+  border-color: #d7d5cc;
+  box-shadow: none;
+  background: #fbfaf5;
+}
+.section-heading h2 {
+  font-size: 16px;
+  letter-spacing: -0.35px;
+}
+.section-heading p {
+  color: #626a63;
+  font-size: 11px;
+}
+.activity-panel {
+  border-top: 3px solid #334d3e;
+}
+.health-panel {
+  background: #e8eade;
+  border: 0;
+  border-radius: 3px;
+}
+.ring-chart > div {
+  background: #e8eade;
+}
+.ring-chart strong {
+  font-family: Georgia, serif;
+  font-size: 38px;
+  font-weight: 400;
+}
+.ring-chart span,
+.health-stat > span,
+.chart-legend {
+  color: #555f56;
+}
+.health-note {
+  color: #795822;
+  border-color: #cbd0c1;
+  font-size: 10px;
+}
+.attention-panel {
+  background: #eee2c9;
+  border-color: #cfba92;
+  border-radius: 3px;
+}
+.attention-panel h2 {
+  font-family: Georgia, serif;
+  font-size: 29px;
+  font-weight: 400;
+  max-width: 230px;
+}
+.attention-heading .eyebrow,
+.attention-panel > p,
+.attention-item,
+.attention-item small {
+  color: #65563c;
+}
+.attention-icon {
+  background: transparent;
+  color: #775521;
+}
+.attention-panel .button {
+  background: transparent;
+  border-color: #9f8c64;
+}
+th {
+  font-family: Consolas, monospace;
+  font-size: 10px;
+  color: #626a63;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+td {
+  border-color: #e1e2d9;
+}
+.table-title {
+  font-size: 12px;
+  color: #2e3b31;
+}
+.table-title small {
+  color: #626a63;
+  font-size: 10px;
+}
+.badge {
+  border-radius: 2px;
+}
+.order-card {
+  border-radius: 3px;
+  box-shadow: none;
+}
+.login-story {
+  background: #202e28;
+}
+.login-story h1 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+}
+.login-story .brand,
+.login-story .brand > span:last-child {
+  color: #f0eee5;
+}
+.login-story .eyebrow,
+.login-story > p,
+.login-story > small {
+  color: #d4dbd1;
+}
+.login-grid-art > div {
+  border-radius: 3px;
+}
+.login-panel h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 32px;
+}
+@media (max-width: 1100px) {
+  .metric-value {
+    font-size: 30px;
+  }
+  .metric-card {
+    padding: 22px 12px;
+  }
+}
+@media (max-width: 700px) {
+  .page-heading h1 {
+    font-size: 36px;
+  }
+  .main-content {
+    padding-top: 24px;
+  }
+  .metric-card {
+    padding: 19px 12px;
+  }
+  .metric-card:nth-child(2) {
+    border-right: 0;
+  }
+  .metric-card:nth-child(3) {
+    padding-left: 0;
+  }
+  .metric-card:nth-child(-n + 2) {
+    border-bottom: 1px solid #d7d5cc;
+  }
+  .metric-value {
+    font-size: 30px;
+  }
+  .welcome-strip {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .welcome-strip button {
+    font-size: 10px;
+  }
+  .welcome-strip p {
+    max-width: 240px;
+    line-height: 1.5;
+  }
+}

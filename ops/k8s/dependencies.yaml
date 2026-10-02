@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata: {name: sqlserver, namespace: maintainflow}
+spec: {selector: {app: sqlserver}, ports: [{port: 1433, targetPort: 1433}], clusterIP: None}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: sqlserver, namespace: maintainflow}
+spec:
+  serviceName: sqlserver
+  replicas: 1
+  selector: {matchLabels: {app: sqlserver}}
+  template:
+    metadata: {labels: {app: sqlserver}}
+    spec:
+      securityContext: {fsGroup: 10001}
+      containers:
+        - name: sqlserver
+          image: mcr.microsoft.com/mssql/server:2022-latest
+          ports: [{containerPort: 1433}]
+          env:
+            - {name: ACCEPT_EULA, value: 'Y'}
+            - name: MSSQL_SA_PASSWORD
+              valueFrom: {secretKeyRef: {name: maintainflow-data, key: sql-password}}
+          volumeMounts: [{name: data, mountPath: /var/opt/mssql}]
+          resources: {requests: {cpu: 500m, memory: 2Gi}, limits: {cpu: '2', memory: 3Gi}}
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec: {accessModes: [ReadWriteOnce], resources: {requests: {storage: 5Gi}}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: rabbitmq, namespace: maintainflow}
+spec: {selector: {app: rabbitmq}, ports: [{name: amqp, port: 5672}, {name: management, port: 15672}], clusterIP: None}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: rabbitmq, namespace: maintainflow}
+spec:
+  serviceName: rabbitmq
+  replicas: 1
+  selector: {matchLabels: {app: rabbitmq}}
+  template:
+    metadata: {labels: {app: rabbitmq}}
+    spec:
+      securityContext: {fsGroup: 999}
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.13-management
+          ports: [{containerPort: 5672}, {containerPort: 15672}]
+          env:
+            - {name: RABBITMQ_DEFAULT_USER, value: maintainflow}
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom: {secretKeyRef: {name: maintainflow-data, key: rabbit-password}}
+          volumeMounts: [{name: data, mountPath: /var/lib/rabbitmq}]
+          readinessProbe: {tcpSocket: {port: 5672}, initialDelaySeconds: 20}
+          resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: '1', memory: 512Mi}}
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec: {accessModes: [ReadWriteOnce], resources: {requests: {storage: 2Gi}}}
