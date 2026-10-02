@@ -12,7 +12,11 @@ public record PartDto(Guid Id, string Name, string Sku, int Stock, int MinimumSt
 public record PartInput(string Name, string Sku, int MinimumStock, decimal UnitCost);
 public record PlanDto(Guid Id, Guid EquipmentId, string Name, PlanTrigger Trigger, DateTimeOffset NextDueAt, decimal? NextMeter, int IntervalDays, decimal MeterInterval, string[] Checklist);
 public record PlanInput(Guid EquipmentId, string Name, PlanTrigger Trigger, DateTimeOffset NextDueAt, decimal? NextMeter, int IntervalDays, decimal MeterInterval, string[] Checklist);
-public record WorkOrderDto(Guid Id, string Title, string Description, Guid EquipmentId, string EquipmentName, Guid CustomerId, string CustomerName, Guid? TechnicianId, string? TechnicianName, WorkOrderStatus Status, Severity Priority, bool Preventive, DateTimeOffset CreatedAt, DateTimeOffset DueAt, DateTimeOffset? CompletedAt, decimal Cost, string[] Checklist, string Version, Severity EquipmentCriticality = Severity.LOW);
+[method: System.Text.Json.Serialization.JsonConstructor]
+public record WorkOrderDto(Guid Id, string Title, string Description, Guid EquipmentId, string EquipmentName, Guid CustomerId, string CustomerName, Guid? TechnicianId, string? TechnicianName, WorkOrderStatus Status, Severity Priority, bool Preventive, DateTimeOffset CreatedAt, DateTimeOffset DueAt, DateTimeOffset? CompletedAt, decimal Cost, string[] Checklist, string Version, Severity EquipmentCriticality = Severity.LOW)
+{
+    public WorkOrderDto() : this(default, "", "", default, "", default, "", null, null, default, default, false, default, default, null, 0, [], "") { }
+}
 public record CreateOrder(Guid EquipmentId, string Title, string Description, Severity Priority, DateTimeOffset DueAt, Guid? TechnicianId = null);
 public record StatusChange(WorkOrderStatus Status, string Version, string? Confirmation = null);
 public record Assignment(Guid TechnicianId, string Version);

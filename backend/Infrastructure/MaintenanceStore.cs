@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace MaintainFlow.Infrastructure;
 public class MaintenanceStore(MaintenanceDbContext db) : IMaintenanceStore
 {
+    public static string[] ReadChecklist(string json) => JsonSerializer.Deserialize<string[]>(json, OrderService.Json) ?? [];
     public async Task<Equipment?> Equipment(Guid id, CancellationToken ct) => await db.Equipment.FindAsync([id], ct);
     public async Task<WorkOrder?> Order(Guid id, CancellationToken ct) => await db.Orders.FindAsync([id], ct);
     public async Task<Part?> Part(Guid id, CancellationToken ct) => await db.Parts.FindAsync([id], ct);
@@ -17,7 +18,18 @@ public class MaintenanceStore(MaintenanceDbContext db) : IMaintenanceStore
     public IQueryable<WorkOrderDto> QueryOrders() => from o in db.Orders.AsNoTracking()
         join e in db.Equipment on o.EquipmentId equals e.Id join c in db.Customers on e.CustomerId equals c.Id
         join t in db.Technicians on o.TechnicianId equals t.Id into ts from t in ts.DefaultIfEmpty()
-        select new WorkOrderDto(o.Id, o.Title, o.Description, o.EquipmentId, e.Name, c.Id, c.Name, o.TechnicianId, t == null ? null : t.Name, o.Status, o.Priority, o.Preventive, o.CreatedAt, o.DueAt, o.CompletedAt, o.Cost, JsonSerializer.Deserialize<string[]>(o.ChecklistJson, OrderService.Json)!, Convert.ToBase64String(o.RowVersion), e.Criticality);
+        select new WorkOrderDto
+        {
+            Id = o.Id, Title = o.Title, Description = o.Description,
+            EquipmentId = o.EquipmentId, EquipmentName = e.Name,
+            CustomerId = c.Id, CustomerName = c.Name,
+            TechnicianId = o.TechnicianId, TechnicianName = t == null ? null : t.Name,
+            Status = o.Status, Priority = o.Priority, Preventive = o.Preventive,
+            CreatedAt = o.CreatedAt, DueAt = o.DueAt, CompletedAt = o.CompletedAt,
+            Cost = o.Cost, EquipmentCriticality = e.Criticality,
+            Checklist = ReadChecklist(o.ChecklistJson),
+            Version = Convert.ToBase64String(o.RowVersion)
+        };
     public Task<WorkOrderDto?> OrderDto(Guid id, CancellationToken ct) => QueryOrders().SingleOrDefaultAsync(x => x.Id == id, ct);
     public async Task<IReadOnlyList<HistoryDto>> History(Guid equipmentId, CancellationToken ct) => await db.History.AsNoTracking().Where(x => x.EquipmentId == equipmentId).OrderByDescending(x => x.CreatedAt).Select(x => new HistoryDto(x.Id, x.WorkOrderId, x.Description, x.Cost, x.CreatedAt)).ToListAsync(ct);
     public async Task<IReadOnlyList<WorkOrderDto>> OpenOrders(Guid equipmentId, CancellationToken ct) => await QueryOrders().Where(x => x.EquipmentId == equipmentId && x.Status != WorkOrderStatus.COMPLETED && x.Status != WorkOrderStatus.CANCELLED).ToListAsync(ct);

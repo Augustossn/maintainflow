@@ -142,17 +142,17 @@ public static class CatalogEndpoints
         {
             var n = Math.Max(1, page ?? 1); var size = Math.Clamp(pageSize ?? 20, 1, 100);
             var q = db.Plans.AsNoTracking().Where(x => search == null || x.Name.Contains(search));
-            return new Page<PlanDto>(await q.OrderBy(x => x.Name).Skip((n - 1) * size).Take(size).Select(x => new PlanDto(x.Id, x.EquipmentId, x.Name, x.Trigger, x.NextDueAt, x.NextMeter, x.IntervalDays, x.MeterInterval, JsonSerializer.Deserialize<string[]>(x.ChecklistJson, OrderService.Json)!)).ToListAsync(ct), await q.CountAsync(ct), n, size);
+            return new Page<PlanDto>(await q.OrderBy(x => x.Name).Skip((n - 1) * size).Take(size).Select(x => new PlanDto(x.Id, x.EquipmentId, x.Name, x.Trigger, x.NextDueAt, x.NextMeter, x.IntervalDays, x.MeterInterval, MaintenanceStore.ReadChecklist(x.ChecklistJson))).ToListAsync(ct), await q.CountAsync(ct), n, size);
         });
         plans.MapGet("/{id:guid}", async (Guid id, MaintenanceDbContext db, CancellationToken ct) =>
-            await db.Plans.AsNoTracking().Where(x => x.Id == id).Select(x => new PlanDto(x.Id, x.EquipmentId, x.Name, x.Trigger, x.NextDueAt, x.NextMeter, x.IntervalDays, x.MeterInterval, JsonSerializer.Deserialize<string[]>(x.ChecklistJson, OrderService.Json)!)).SingleOrDefaultAsync(ct) is {} dto ? Results.Ok(dto) : Results.NotFound());
+            await db.Plans.AsNoTracking().Where(x => x.Id == id).Select(x => new PlanDto(x.Id, x.EquipmentId, x.Name, x.Trigger, x.NextDueAt, x.NextMeter, x.IntervalDays, x.MeterInterval, MaintenanceStore.ReadChecklist(x.ChecklistJson))).SingleOrDefaultAsync(ct) is {} dto ? Results.Ok(dto) : Results.NotFound());
         plans.MapPost("", async (PlanInput input, MaintenanceDbContext db, OrderService service, HttpContext ctx, CancellationToken ct) =>
         {
             OrderService.Required(input.Name, "Nome"); OrderService.ValidEnum(input.Trigger); if (input.IntervalDays <= 0 || input.MeterInterval <= 0 || input.Checklist is null || input.Checklist.Length > 50 || input.Checklist.Any(x => string.IsNullOrWhiteSpace(x) || x.Length > 2000) || !await db.Equipment.AnyAsync(x => x.Id == input.EquipmentId, ct) || (input.Trigger is PlanTrigger.HOURS or PlanTrigger.MILEAGE && (!input.NextMeter.HasValue || input.NextMeter < 0))) throw new BusinessException("Plano inválido.");
             var e = new MaintenancePlan(); e.EquipmentId = input.EquipmentId; e.Name = input.Name; e.Trigger = input.Trigger; e.NextDueAt = input.NextDueAt; e.NextMeter = input.NextMeter; e.IntervalDays = input.IntervalDays; e.MeterInterval = input.MeterInterval; e.ChecklistJson = JsonSerializer.Serialize(input.Checklist, OrderService.Json);
             db.Plans.Add(e); service.Audit(ctx.User.Identity!.Name!, "maintenance-plans.created", e.Id, e.Name);
             await db.SaveChangesAsync(ct);
-            var dto = await db.Plans.Where(x => x.Id == e.Id).Select(x => new PlanDto(x.Id, x.EquipmentId, x.Name, x.Trigger, x.NextDueAt, x.NextMeter, x.IntervalDays, x.MeterInterval, JsonSerializer.Deserialize<string[]>(x.ChecklistJson, OrderService.Json)!)).SingleAsync(ct);
+            var dto = await db.Plans.Where(x => x.Id == e.Id).Select(x => new PlanDto(x.Id, x.EquipmentId, x.Name, x.Trigger, x.NextDueAt, x.NextMeter, x.IntervalDays, x.MeterInterval, MaintenanceStore.ReadChecklist(x.ChecklistJson))).SingleAsync(ct);
             return Results.Created($"/maintenance-plans/{e.Id}", dto);
         }).RequireAuthorization("Manager");
         plans.MapPut("/{id:guid}", async (Guid id, PlanInput input, MaintenanceDbContext db, OrderService service, HttpContext ctx, CancellationToken ct) =>
@@ -161,7 +161,7 @@ public static class CatalogEndpoints
             var e = await db.Plans.FindAsync([id], ct) ?? throw new KeyNotFoundException();
             e.EquipmentId = input.EquipmentId; e.Name = input.Name; e.Trigger = input.Trigger; e.NextDueAt = input.NextDueAt; e.NextMeter = input.NextMeter; e.IntervalDays = input.IntervalDays; e.MeterInterval = input.MeterInterval; e.ChecklistJson = JsonSerializer.Serialize(input.Checklist, OrderService.Json);
             service.Audit(ctx.User.Identity!.Name!, "maintenance-plans.updated", id, e.Name); await db.SaveChangesAsync(ct);
-            return Results.Ok(await db.Plans.Where(x => x.Id == id).Select(x => new PlanDto(x.Id, x.EquipmentId, x.Name, x.Trigger, x.NextDueAt, x.NextMeter, x.IntervalDays, x.MeterInterval, JsonSerializer.Deserialize<string[]>(x.ChecklistJson, OrderService.Json)!)).SingleAsync(ct));
+            return Results.Ok(await db.Plans.Where(x => x.Id == id).Select(x => new PlanDto(x.Id, x.EquipmentId, x.Name, x.Trigger, x.NextDueAt, x.NextMeter, x.IntervalDays, x.MeterInterval, MaintenanceStore.ReadChecklist(x.ChecklistJson))).SingleAsync(ct));
         }).RequireAuthorization("Manager");
         plans.MapDelete("/{id:guid}", async (Guid id, MaintenanceDbContext db, OrderService service, HttpContext ctx, CancellationToken ct) =>
         {
