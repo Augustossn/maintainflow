@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 using Testcontainers.MsSql;
 using Testcontainers.RabbitMq;
@@ -16,9 +17,36 @@ namespace MaintainFlow.Tests;
 public class DockerFactAttribute : FactAttribute { public DockerFactAttribute() { if (Environment.GetEnvironmentVariable("RUN_INTEGRATION") != "1") Skip = "Set RUN_INTEGRATION=1 with Docker running."; } }
 public class IntegrationTests
 {
-    private class Factory(string sql, string rabbit) : WebApplicationFactory<Program>
+    private class Factory(string sql, string rabbit, bool initialize = true) : WebApplicationFactory<Program>
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Development").ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Database"] = sql, ["RabbitMQ:Uri"] = rabbit, ["Jwt:Key"] = "integration-tests-key-at-least-32-characters", ["Auth:DemoEnabled"] = "true", ["Auth:DemoPassword"] = "IntegrationPassword!2026", ["Database:Initialize"] = "true", ["Database:Seed"] = "true", ["Workers:Disabled"] = "false" }));
+        protected override void ConfigureWebHost(IWebHostBuilder builder) => builder.UseEnvironment("Development");
+
+        protected override IHost CreateHost(IHostBuilder builder)
+        {
+            // Host configuration is available when the minimal API reads settings
+            // before Build(); ConfigureAppConfiguration is applied too late there.
+            builder.ConfigureHostConfiguration(c => c.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:Database"] = sql,
+                ["RabbitMQ:Uri"] = rabbit,
+                ["Jwt:Key"] = "integration-tests-key-at-least-32-characters",
+                ["Auth:DemoEnabled"] = "true",
+                ["Auth:DemoPassword"] = "IntegrationPassword!2026",
+                ["Database:Initialize"] = initialize.ToString(),
+                ["Database:Seed"] = initialize.ToString(),
+                ["Workers:Disabled"] = (!initialize).ToString()
+            }));
+            return base.CreateHost(builder);
+        }
+    }
+    [Fact]
+    public async Task FactoryConfiguresJwtBeforeApiStartup()
+    {
+        await using var factory = new Factory("Server=unused;Database=unused", "amqp://unused", initialize: false);
+        using var client = factory.CreateClient();
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/health/live")).StatusCode);
+        var login = await client.PostAsJsonAsync("/auth/login", new { email = "admin@maintainflow.local", password = "IntegrationPassword!2026" });
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
     }
     [DockerFact]
     public async Task CreatesOrderPublishesEventAuditsAndRejectsStaleVersion()
